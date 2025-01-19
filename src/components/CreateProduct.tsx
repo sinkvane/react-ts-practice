@@ -5,7 +5,7 @@ import ErrorMessage from './ErrorMessage';
 
 const ProductData: IProduct = {
 	title: '',
-	price: 13.5,
+	price: 0,
 	description: 'lorem ipsum set',
 	image: 'https://i.pravatar.cc',
 	category: 'electronic',
@@ -21,6 +21,7 @@ interface CreateProductProps {
 
 function CreateProduct({ onCreate }: CreateProductProps) {
 	const [value, setValue] = useState('');
+	const [price, setPrice] = useState('');
 	const [error, setError] = useState('');
 
 	const submitHandler = async (e: React.FormEvent) => {
@@ -28,20 +29,27 @@ function CreateProduct({ onCreate }: CreateProductProps) {
 
 		setError('');
 
-		if (value.trim().length === 0) {
-			setError('Please enter valid title');
+		if (value.trim().length === 0 || !price || parseFloat(price) <= 0 || Number.isNaN(Number(price))) {
+			setError('Please enter valid value');
 			return;
 		}
 
 		ProductData.title = value;
+		ProductData.price = parseFloat(price);
 
 		const response = await axios.post<IProduct>('https://fakestoreapi.com/products', ProductData);
 
 		onCreate(response.data);
 	};
 
-	const changeHandler = (e: React.KeyboardEvent<HTMLInputElement>) => {
-		setValue(e.target.value);
+	const changeTitleHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const input = e.target as HTMLInputElement;
+		setValue(input.value);
+	};
+
+	const changePriceHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const input = e.target as HTMLInputElement;
+		setPrice(input.value);
 	};
 
 	return (
@@ -51,7 +59,14 @@ function CreateProduct({ onCreate }: CreateProductProps) {
 				className="border py-2 px-4 mb-2 w-full outline-0"
 				placeholder="enter product title"
 				value={value}
-				onChange={changeHandler}
+				onChange={changeTitleHandler}
+			/>
+			<input
+				type="number"
+				className="border py-2 px-4 mb-2 w-full outline-0"
+				placeholder="enter product price"
+				value={price}
+				onChange={changePriceHandler}
 			/>
 
 			{error && <ErrorMessage error={error} />}
